@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择学生</title>
+    <link rel="stylesheet" href="css/chooseStudent.css"  type="text/css">
+    <script type="text/javascript"  src="js/jquery-1.11.1.min.js"></script>
+    <script>
+         $(document).ready(function(){
+            var htId="";
+            // 查看学生
+            $.getJSON("https://zbpk.tgk12.cn/a/schedulePlan/getParentStudentPhone.json",function(data,status){
+                console.log(data);
+                if(data.success==false){
+                   alert(data.message);
+                }else{
+                    var mustShowContent="";
+                    var allData=data.result;
+                    htId=allData[0].htId;
+                    // alert(JSON.stringify(allData));
+                    console.log(allData);
+                    for(var i=0;i<allData.length;i++){
+                        var mustContent=`<input type="radio" name="student" value='${allData[i].sUid}'/>`+allData[i].userName;   
+                        mustShowContent=mustShowContent+mustContent;
+                        document.getElementById("students").innerHTML=mustShowContent; 
+                    }
+                      
+                }
+            })
+            var chooseStu=document.getElementsByName("student");
+                // console.log(chooseStu);
+                var stuId=""
+                for(i=0;i<chooseStu.length;i++){
+                    if(chooseStu[i].checked){
+                        console.log(chooseStu[i].value);
+                        stuId=chooseStu[i].value;
+                    }
+                 }
+            $("#save").click(function(){
+                var chooseStu=document.getElementsByName("student");
+                // console.log(chooseStu);
+                var stuId=""
+                for(i=0;i<chooseStu.length;i++){
+                    if(chooseStu[i].checked){
+                        console.log(chooseStu[i].value);
+                        stuId=chooseStu[i].value;
+                    }
+                 }
+                console.log(stuId);
+                if(stuId==""){
+                    alert("请选择学生！");
+                }else{
+                    $("#buttonShow").css("display","block");
+                }  
+         })
+            $("#studentClass").click(function(){
+                $("#studentClass").css("backgroundColor","white");
+                var chooseStu=document.getElementsByName("student");
+                // console.log(chooseStu);
+                var stuId=""
+                for(i=0;i<chooseStu.length;i++){
+                    if(chooseStu[i].checked){
+                        console.log(chooseStu[i].value);
+                        stuId=chooseStu[i].value;
+                    }
+                 }
+                var url="mobileIndex.html?htId="+htId+"&stuId="+stuId;
+                window.location.href=url;
+            })
+            $("#lookCurr").click(function(){
+                $("#lookCurr").css("backgroundColor","white");
+                var chooseStu=document.getElementsByName("student");
+                // console.log(chooseStu);
+                var stuId=""
+                for(i=0;i<chooseStu.length;i++){
+                    if(chooseStu[i].checked){
+                        console.log(chooseStu[i].value);
+                        stuId=chooseStu[i].value;
+                    }
+                 }
+                var url="table.html?htId="+htId+"&stuId="+stuId;
+                window.location.href=url;
+            })
+     })
+         
+    </script>
+</head>
+<body>
+    <div id="container">
+        <div id="head">
+            <a id="back">返回</a>
+            <h3>选择学生</h3>
+        </div>
+        <div id="content">
+            <p>请选择学生：</p>
+            <div id="students"></div>
+            <div id="buttonShow">
+                <button id="studentClass">学生选课</button>
+            </br>
+                <button id="lookCurr">课表查看</button>
+            </div>
+        </div>
+        <div id="foot">
+            <button id="save" >确认</button>
+        </div>
+    </div>
+    <!-- 弹框的设计 -->    
+</body>
+</html>

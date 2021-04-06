@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课表端</title>
+     <!-- 自定义样式 -->
+     <link rel="stylesheet" href="css/tableIndex.css"  type="text/css">
+     <script type="text/javascript"  src="js/jquery-1.11.1.min.js"></script>
+     <script>
+         $(document).ready(function(){
+            var tableData=[]; 
+            var queryString = (window.location.search || " ").split(/[?&]/)[1];
+            var htId = (queryString || " ").split('=')[1];
+            console.log(htId);
+            var queryTaskString = (window.location.search || " ").split(/[?&]/)[2];
+            var stuId = (queryTaskString || " ").split('=')[1];
+            console.log(stuId);
+            var url="?htId="+htId+"&stuId="+stuId;
+            $.get("https://zbpk.tgk12.cn/a/scheduleSyllabus/getStuDataPhone.json"+url,function(data,status){
+            // var allData=JSON.stringify(data); 
+                // var allData=JSON.stringify(data.result.syllabus);
+                console.log(data);
+                if(data&&data.success==false){
+                    alert(data.message);
+                }else{
+                    //获取第一列的值
+                    console.log(data.result.curriculumTemplatesEntity);
+                    let curriculumInfo=data.result.curriculumTemplatesEntity;
+                    var activity=[]
+                    console.log(curriculumInfo.morningread);
+                    for(let i=0;i<curriculumInfo.morningread;i++){
+                        let j=i+1;
+                        let data="早读"+j;
+                        // console.log(data);
+                       tableData.push({
+                            activity:data,
+                       });
+                    }
+                    for(let i=0;i<curriculumInfo.morning;i++){
+                        let j=i+1;
+                        let data="上午"+j;
+                        tableData.push({
+                            activity:data,
+                       });
+                    }
+                    for(let i=0;i<curriculumInfo.noon;i++){
+                        let j=i+1;
+                        let data="中午"+j;
+                        tableData.push({
+                            activity:data,
+                       });
+                    }
+                    for(let i=0;i<curriculumInfo.afternoon;i++){
+                        let j=i+1;
+                        let data="下午"+j;
+                        tableData.push({
+                            activity:data,
+                       });
+                    }
+                    for(let i=0;i<curriculumInfo.evening;i++){
+                        let j=i+1;
+                        let data="晚自习"+j;
+                        tableData.push({
+                            activity:data,
+                       });
+                    }
+                    console.log(tableData);
+                    //获取课表数据
+                    var allData=data.result.syllabus;
+                    console.log(allData);
+                    var dataSource=[];
+                    //获取学生课程数据
+                 //创建数组
+                for(var i=0;i<allData.length;i++){
+                    // console.log(allData[i].position);
+                    if(allData[i].position){
+                        var position=eval(allData[i].position);
+                        // console.log(position);
+                        const getInfo=(dataItem,sourceItem={})=>{
+                            // console.log(dataItem);
+                        if(!sourceItem) sourceItem={}
+                        let content = dataItem.subChildName +dataItem.classNumId;
+                        // console.log(content);
+                        const column=eval(dataItem.position)[1];
+                        // console.log(column);
+                        switch (column) {
+                                case 0:
+                                    sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                    break;
+                                case 1:
+                                    sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                    break;
+                                case 2:
+                                    sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                    break;
+                                case 3:
+                                    sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                    break;
+                                case 4:
+                                    sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
+                                    break;
+                                case 5:
+                                    if(sourceItem.six){
+                                        sourceItem.six=sourceItem.six ?sourceItem.six+',\n'+content:content;
+                                        break;
+                                    }
+                                case 6:
+                                    if(sourceItem.seven){
+                                        sourceItem.seven=sourceItem.seven ?sourceItem.seven+',\n'+content:content;
+                                        break;
+                                    }
+                                }
+                                return sourceItem;
+                                // console.log(sourceItem);
+                    };
+                    // console.log(position[0]);
+                    dataSource[position[0]]=getInfo(allData[i],dataSource[position[0]]);
+                    console.log(dataSource[position[0]]);
+                    }
+                    for(let i=0;i<tableData.length;i++){
+                        // console.log(i,this.tableData[i]);
+                        if(dataSource[i]===undefined){
+                            // console.log(i);
+                            let pushData={
+                                one:"",
+                                two:"",
+                                three:"",
+                                four:"",
+                                five:"",
+                                six:"",
+                                seven:"",
+                            }
+                            dataSource[i]=pushData;
+                        }
+                        // console.log(dataSource[i]);
+                    }
+                    // console.log(dataSource);
+                    for(let i=0;i<tableData.length;i++){
+                        tableData[i].one=dataSource[i].one;
+                        tableData[i].two=dataSource[i].two;
+                        tableData[i].three=dataSource[i].three;
+                        tableData[i].four=dataSource[i].four;
+                        tableData[i].five=dataSource[i].five;
+                        tableData[i].six=dataSource[i].six;
+                        tableData[i].seven=dataSource[i].seven;
+                    }
+                    console.log(tableData);
+                }
+                var tbody=document.getElementById('tbMain');
+                //遍历数据
+                    for(var i=0;i<tableData.length;i++){      
+                        // console.log(dataSource[i]);
+                        if(tableData[i].one===undefined){
+                            tableData[i].one="";
+                        }
+                        if(tableData[i].two===undefined){
+                            tableData[i].two="";
+                        }
+                        if(tableData[i].three===undefined){
+                            tableData[i].three="";
+                        }
+                        if(tableData[i].four===undefined){
+                            tableData[i].four="";
+                        }
+                        if(tableData[i].five===undefined){
+                            tableData[i].five="";
+                        }
+                        if(tableData[i].six===undefined){
+                            tableData[i].six="";
+                        }
+                        if(tableData[i].seven===undefined){
+                            tableData[i].seven="";
+                        }
+                        const trow=getDataRow(tableData[i])       //定义一个方法，返回列数据
+                        tbody.appendChild(trow);
+                    }
+                }
+            
+            })
+                function getDataRow(h){
+                    var row=document.createElement('tr');    //创建行
+                    //创建第一列
+                    var keyCell=document.createElement('td');    //创建第一列key
+                    console.log(h.activity);
+                    keyCell.innerHTML=h.activity;           //填充数据
+                    row.appendChild(keyCell);
+                    //创建第二列
+                    var oneCell=document.createElement('td');    //创建第二列one
+                    oneCell.innerHTML=h.one;           //填充数据
+                    row.appendChild(oneCell);
+                    //创建第三列
+                    var twoCell=document.createElement('td');    //创建第三列two
+                    twoCell.innerHTML=h.two;           //填充数据
+                    row.appendChild(twoCell);
+                    //创建第四列
+                    var threeCell=document.createElement('td');    //创建第四列three
+                    threeCell.innerHTML=h.three;           //填充数据
+                    row.appendChild(threeCell);
+                    //创建第五列
+                    var fourCell=document.createElement('td');    //创建第五列four
+                    fourCell.innerHTML=h.four;           //填充数据
+                    row.appendChild(fourCell);
+                    //创建第六列
+                    var fiveCell=document.createElement('td');    //创建第六列five
+                    fiveCell.innerHTML=h.five;           //填充数据
+                    row.appendChild(fiveCell);
+                     //创建第七列
+                     var sixCell=document.createElement('td');    //创建第七列six
+                     sixCell.innerHTML=h.six;           //填充数据
+                    row.appendChild(sixCell);
+                     //创建第八列
+                     var sevenCell=document.createElement('td');    //创建第八列seven
+                     sevenCell.innerHTML=h.seven;           //填充数据
+                    row.appendChild(sevenCell);
+                    // console.log(row);
+                    return row;
+                }
+          //返回
+            $("#back").click(function(){
+                history.go(-1);
+            })
+         })
+     </script>
+</head>
+<body>
+    <div id="container">
+        <div id="head">
+            <a id="back">返回</a>
+            <h3>课程表</h3>
+        </div>
+        <div id="content">
+            <table id="table-body" cellspacing="0">
+               <thread>
+                    <tr>
+                        <th></th>
+                        <th>星期一</th>
+                        <th>星期二</th>
+                        <th>星期三</th>
+                        <th>星期四</th>
+                        <th>星期五</th>
+                        <th>星期六</th>
+                        <th>星期日</th>
+                    </tr>
+               </thread>
+               <tbody id="tbMain"></tbody>
+            </table>
+        </div>
+    </div>
+    
+</body>
+</html>

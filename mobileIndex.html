@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选课手机端</title>
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="css/index.css"  type="text/css">
+     <!-- 本页面自定义 javascript 代码 -->
+     <!-- <script type="text/javascript" src="js/index.js"></script> -->
+
+      <!-- jQuery -->
+    <script type="text/javascript"  src="js/jquery-1.11.1.min.js"></script>
+    <script> 
+    $(document).ready(function(){
+        var planId="";
+        var chooseStr=[];
+        var allData=[];
+        var info="";
+        var queryString = (window.location.search || " ").split(/[?&]/)[1];
+        var htId = (queryString || " ").split('=')[1];
+        console.log(htId);
+        var queryTaskString = (window.location.search || " ").split(/[?&]/)[2];
+        var stuId = (queryTaskString || " ").split('=')[1];
+        console.log(stuId);
+        var url="?htId="+htId+"&stuId="+stuId;
+        // 必修课
+        $.getJSON("https://zbpk.tgk12.cn/a/schedulePlan/getCourseSelectPhone.json"+url,function(data,status){
+            //  alert(JSON.stringify(data),);
+            // var allData=JSON.stringify(data.result); 
+            // alert(data.success);
+            if(data.success==false){
+                alert(data.message);
+            }else{
+                allData=data.result;
+                console.log(allData);
+                for(var i in allData.courseSelectDtos){
+                    if(allData.courseSelectDtos[i].name==="必修课程"){
+                        var mustAllData=allData.courseSelectDtos[i];
+                        planId=mustAllData.planId;
+                        var mustCoverRule=mustAllData.coverRule;
+                        var mustCourseData=mustAllData.subChildIds;
+                        var mustCourse="";
+                        var mustCourseName="";
+                        var mustShow="";
+                        var mustShowLabel="";
+                        var mustShowContent="";
+                        for(var i in mustCourseData){
+                            if(mustCourseData[i].isable===1){
+                                if(mustCourse==""){
+                                    mustCourse=mustCourseData[i].subChildName
+                                 }else{
+                                     mustCourse=mustCourse+","+mustCourseData[i].subChildName
+                                }
+                            }else{
+                            mustCourse="无";   
+                        }
+                        if(mustCourseData[i].ischoosen===1){
+                            mustCourseData[i].checked=true;
+                            break;
+                        }
+                    }
+                }else if(allData.courseSelectDtos[i].name==="选修课程"){
+                    var chooseAllData=allData.courseSelectDtos[i];
+                    planId=chooseAllData.planId;
+                        var chooseCoverRule=chooseAllData.coverRule;
+                        var chooseCourseData=chooseAllData.subChildIds;
+                        var chooseCourse="";
+                        var chooseCourseName="";
+                        var chooseShow="";
+                        var chooseShowLabel="";
+                        var chooseShowContent=""; 
+                        for(var i in chooseCourseData){
+                            if(chooseCourseData[i].isable===1){
+                                if(chooseCourse==""){
+                                    chooseCourse=chooseCourseData[i].subChildName
+                                }else{ 
+                                    chooseCourse=chooseCourse+","+chooseCourseData[i].subChildName
+                                }
+                            }else{
+                                chooseCourse="无";
+                            }
+                            if(chooseCourseData[i].ischoosen===1){
+                                chooseCourseData[i].checked=true;
+                                break;
+                            }
+                        }      
+                    }
+                }
+                $("#mustBtn").click(function(){
+                    if(!mustCourseData){
+                        var list=[...allData.courseSelectDtos];
+                        list.forEach(item=>{
+                            if(item.name!=="必修课程"){
+                                info="无必修课";
+                            $("#mustBtn").css("color","red");
+                            alert(info);
+                            }
+                        })
+                    }else{
+                        mustShowContent="";
+                        mustShowLabel="选择其中"+mustCoverRule+"科，"+mustCourse+"必修"+"<br>";
+                        document.getElementById("mustlabel").innerHTML=mustShowLabel;
+                        for(var i=0;i<mustCourseData.length;i++){
+                            var mustContent=`<input type='checkbox' name='choseCourse' value='${mustCourseData[i].subChildId}'/>`+mustCourseData[i].subChildName+"<br>";      
+                            mustShowContent=mustShowContent+mustContent
+                            // alert("showContent"+mustShowContent);
+                            document.getElementById("mustsubject").innerHTML=mustShowContent;
+                        }
+                    }        
+                $("#mustBtn").css("background-color","white");
+                $("#mustright").show();
+                $("#chooseright").hide();
+            });
+                //选修课 
+                $("#chooseBtn").click(function(){
+                    if(!chooseCourseData){
+                        var list=[...allData.courseSelectDtos];
+                        list.forEach(item=>{
+                            if(item.name!=="选修课程"){
+                                info="无选修课";
+                            $("#chooseBtn").css("color","red");
+                            alert(info);
+                            }
+                        })
+                    }else{
+                        chooseShowContent="";
+                        chooseShowLabel="选择其中"+chooseCoverRule+"科，"+chooseCourse+"必修"+"<br>";
+                        document.getElementById("chooselabel").innerHTML=chooseShowLabel;
+                        // alert(JSON.stringify(chooseCourseData));
+                        for(var i=0;i<chooseCourseData.length;i++){
+                            var chooseContent=`<input type='checkbox' name='choseCourse' value='${chooseCourseData[i].subChildId}'/>`+chooseCourseData[i].subChildName+"<br>";      
+                            chooseShowContent=chooseShowContent+chooseContent
+                            // alert("showContent"+chooseShowContent);
+                            document.getElementById("choosesubject").innerHTML=chooseShowContent;
+                        }
+                    }
+                    $("#chooseBtn").css("background-color","white");
+                    $("#chooseright").show();
+                    $("#mustright").hide();
+                });
+            }
+
+        });
+        //保存
+        $("#save").click(function(){
+             //获取数据
+       var choseCourse=document.getElementsByName("choseCourse");
+           var subChildId=""
+           for(i=0;i<choseCourse.length;i++){
+               if(choseCourse[i].checked){
+                   subChildId=choseCourse[i].value;
+                //    console.log(subChildId);
+                //    alert(subChildId);
+                   if(chooseStr===""){
+                       chooseStr=[{subChildId}];
+                   }else{
+                       chooseStr=[...chooseStr,{subChildId}];
+                   }
+                //    console.log(chooseStr);
+               }
+           }
+           console.log(chooseStr);
+           if(chooseStr!=[]){
+            $.ajax({url:"https://zbpk.tgk12.cn/a/schedulePlan/saveCourseSelectPhone.json",
+                    type:"post",
+                    data:JSON.stringify({
+                        planId:planId,
+                        subChildIds: chooseStr,
+                        htId:htId,
+                        stuId:stuId,
+                    }),
+                    contentType:'application/json',
+                    success:function(result) {
+                        $("span").html(result);
+                        alert("保存成功！");
+                    }
+            })
+           }else{
+               alert("选择课程为空，不能保存！");
+           }
+           
+    })    
+        //返回
+        $("#back").click(function(){
+            history.go(-1);
+        })
+});
+// checked(info){
+//     console.log(this.checked);
+// };
+    </script>
+</head>
+<body >
+   <div id="container">
+    <div id="head">
+        <a id="back">返回</a>
+        <h3>学生选课</h3>
+    </div>
+    <div id="content">
+        <div id="left">
+            <button id="mustBtn">必须课</button>
+            <button id="chooseBtn">选修课</button>
+        </div>
+        <div id="mustright">
+            <p id="mustlabel"></p>
+            <div id="mustsubject"></div>
+        </div>
+        <div id="chooseright">
+            <p id="chooselabel"></p>
+            <div id="choosesubject"></div>
+        </div>
+    </div>
+    <div id="foot">
+        <button id="save" >保存</button>
+        <button id="cancel">取消</button>
+    </div>
+   </div>
+</body>
+</html>
